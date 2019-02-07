@@ -3,6 +3,7 @@
 import icsToJson from "ics-to-json";
 import fetch from "node-fetch";
 import prettyjson from "prettyjson";
+import { XMLElement, XMLAttribute, XMLChild, xml } from "xml-decorators";
 
 const calendarURL =
     "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en";
