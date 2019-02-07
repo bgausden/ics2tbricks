@@ -1,6 +1,6 @@
 // ICS to Tbricks
 
-import { icsToJson } from "ics-to-json";
+import icsToJson from "ics-to-json";
 import fetch from "node-fetch";
 import prettyjson from "prettyjson";
 
@@ -24,7 +24,7 @@ const convert = async (fileLocation: string) => {
 };
 
 let convertPromise = convert(calendarURL);
-convertPromise.then((result: [calItem]) => {
+convertPromise.then((result: {}[]) => {
     console.log(`\n${result.length} calendar entries returned.`);
     console.log(`\nFirst calendar is:`);
     console.log(`\n${prettyjson.render(result[0])}`);
