@@ -1,7 +1,8 @@
 // ICS to Tbricks
 
+import Promise from "bluebird";
 import icsToJson from "ics-to-json";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 import prettyjson from "prettyjson";
 import { XMLElement, XMLAttribute, XMLChild, xml } from "xml-decorators";
 
@@ -14,20 +15,40 @@ interface calItem {
     summary: string;
 }
 
-// Get ICS text however you like, example below
-// Make sure you have the right CORS settings if needed
-const convert = async (fileLocation: string) => {
-    const icsRes = await fetch(fileLocation);
-    const icsData = await icsRes.text();
-    // Convert
-    const data = icsToJson(icsData);
-    return data;
+/* const convert = (url: string): BluebirdPromise<{}[]> => {
+    return BluebirdPromise.resolve(fetch(url))
+        .then((response: Response) => {
+            return response.text();
+        })
+        .then((icsData: string) => {
+            return icsToJson(icsData);
+        });
 };
 
 let convertPromise = convert(calendarURL);
 convertPromise.then((result: {}[]) => {
-    console.log(`\n${result.length} calendar entries returned.`);
-    console.log(`\nFirst calendar is:`);
-    console.log(`\n${prettyjson.render(result[0])}`);
-});
-convertPromise.catch(error => console.log(new Error(error)));
+ */
+
+let url = calendarURL;
+let jsonDataPromise = Promise.resolve(fetch(url))
+    .then((response: Response) => {
+        return Promise.resolve(response.text());
+    })
+    .then((icsData: string) => {
+        return icsToJson(icsData);
+    })
+    .catch<Error>(error => new Error(error));
+
+jsonDataPromise
+    .then(jsonData => {
+        if (jsonData instanceof Error) {
+            console.log(`\nSomething has gone wrong`);
+        } else {
+            console.log(`\n${jsonData.length} calendar entries returned.`);
+            console.log(`\nFirst calendar is:`);
+            console.log(`\n${prettyjson.render(jsonData[0])}`);
+        }
+    })
+    .catch(error => {
+        new Error(error);
+    });
