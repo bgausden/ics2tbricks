@@ -1,0 +1,39 @@
+{
+    "name": "ics-to-tbcalresource",
+    "version": "1.0.0",
+    "description": "Simple utility for converting a trading/settlement calendar in ICS form to the equivalent Tbricks calendar resource (in XML format).",
+    "main": "ics2tbricks.js",
+    "dependencies": {
+        "bluebird": "3.5.1",
+        "ics-to-json": "^1.0.0",
+        "es6-shim": "^0.35.4",
+        "lodash": "^4.17.11",
+        "prettyjson": "^1.2.1",
+        "node-fetch": "^2.3.0",
+        "xml-decorators": "^1.0.6",
+        "tsconfig-paths": "^3.8.0"
+    },
+    "devDependencies": {
+        "@types/bluebird": "3.5.22",
+        "@types/node-fetch": "^2.1.6",
+        "@types/lodash": "^4.14.121",
+        "@types/prettyjson": "^0.0.28"
+    },
+    "scripts": {
+        "test": "test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bgausden/ICS-to-TbricksCalResource.git"
+    },
+    "keywords": [
+        "Tbricks",
+        "ICS"
+    ],
+    "author": "Barry Gausden <barry@gausden.org> (http://twitter.com/bgausden)",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/bgausden/ICS-to-TbricksCalResource/issues"
+    },
+    "homepage": "https://github.com/bgausden/ICS-to-TbricksCalResource#readme"
+}
