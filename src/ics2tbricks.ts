@@ -15,20 +15,6 @@ interface calItem {
     summary: string;
 }
 
-/* const convert = (url: string): BluebirdPromise<{}[]> => {
-    return BluebirdPromise.resolve(fetch(url))
-        .then((response: Response) => {
-            return response.text();
-        })
-        .then((icsData: string) => {
-            return icsToJson(icsData);
-        });
-};
-
-let convertPromise = convert(calendarURL);
-convertPromise.then((result: {}[]) => {
- */
-
 let url = calendarURL;
 let jsonDataPromise = Promise.resolve(fetch(url))
     .then((response: Response) => {
