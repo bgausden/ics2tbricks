@@ -10,6 +10,19 @@
             "name": "Launch Program",
             "program": "${workspaceFolder}/src/ics2tbricks.ts",
             "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+        },
+        {
+            "name": "Launch in ts-node",
+            "type": "node",
+            "request": "launch",
+            "args": ["${workspaceRoot}/${relativeFile}"],
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "TS_NODE_IGNORE": "false"
+            }
         }
     ]
 }
