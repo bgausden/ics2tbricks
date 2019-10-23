@@ -85,16 +85,12 @@ var processJSONData = (jsonData: {}[]): void => {
     jsonData.forEach(entry => {
         var calItem: TCalItem = <TCalItem>entry;
         if ((calItem.summary = HONG_KONG_CLOSED)) {
-            var dateString = moment(calItem.startDate).format(
-                "YYYY-MM-DDTHH:MM:SSZ"
-            );
-            var closedDate = new Date(dateString);
+            var closedDate = moment(calItem.startDate);
             var dayElement = {
                 day: {
                     _attr: {
-                        // TODO we aren't getting the days correctly - the days are +3 days somehow
-                        date: `${closedDate.getFullYear()}-${closedDate.getMonth() +
-                            1}-${closedDate.getDay() + 1}`,
+                        date: `${closedDate.format()} ${closedDate.month() +
+                            1}-${closedDate.date()}`,
                         valid: "no",
                     },
                 },
