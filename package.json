@@ -7,7 +7,6 @@
         "bluebird": "3.5.1",
         "es6-shim": "^0.35.5",
         "ics-to-json": "^1.0.0",
-        "lodash": "^4.17.15",
         "moment": "^2.24.0",
         "node-fetch": "^2.6.0",
         "prettyjson": "^1.2.1",
@@ -18,12 +17,14 @@
     },
     "devDependencies": {
         "@types/bluebird": "3.5.22",
-        "@types/lodash": "^4.14.121",
-        "@types/node-fetch": "^2.5.2",
+        "@types/lodash": "^4.14.149",
+        "@types/node-fetch": "^2.5.4",
         "@types/prettyjson": "^0.0.28",
-        "@types/xml": "^1.0.3",
-        "ts-node": "^8.4.1",
-        "typescript": "^3.6.4"
+        "@types/xml": "^1.0.4",
+        "lodash": "^4.17.15",
+        "reflect-metadata": "^0.1.13",
+        "ts-node": "^8.5.2",
+        "typescript": "^3.7.2"
     },
     "scripts": {
         "test": "test"
