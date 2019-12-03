@@ -13,11 +13,13 @@
         "tsconfig-paths": "^3.9.0",
         "xml": "^1.0.1",
         "xml-decorators": "^1.0.8",
+        "xml-js": "^1.6.11",
         "xmlcreate": "^2.0.1"
     },
     "devDependencies": {
         "@types/bluebird": "3.5.22",
         "@types/lodash": "^4.14.149",
+        "@types/moment": "^2.13.0",
         "@types/node-fetch": "^2.5.4",
         "@types/prettyjson": "^0.0.28",
         "@types/xml": "^1.0.4",
@@ -27,7 +29,8 @@
         "typescript": "^3.7.2"
     },
     "scripts": {
-        "test": "test"
+        "test": "test",
+        "convert": "xml-js extra_src/sample_calendar.xml --spaces 4"
     },
     "repository": {
         "type": "git",
