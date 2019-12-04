@@ -1,30 +1,63 @@
 // ICS to Tbricks
 
-import Bluebird from "bluebird";
 import icsToJson from "ics-to-json";
-import fetch, { Response, Body } from "node-fetch";
+import fetch from "node-fetch";
 import prettyjson from "prettyjson";
-// import { XMLElement, XMLAttribute, XMLChild, xml } from "xml-decorators";
-import { document, XmlDocument, XmlElement } from "xmlcreate";
-// import xml from "xml";
 import moment from "moment";
-import xml, { Element, json2xml } from "xml-js";
+import { json2xml } from "xml-js";
 
 const HONG_KONG_CLOSED = "Hong Kong Market is Closed";
-const RESOURCE_NAME = "XHKF";
 const CALENDAR_URL =
     "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en";
 const DAY = "day";
 const DAYS = "days";
-const YES = "yes";
 const NO = "no";
 const ELEMENT = "element";
 
-interface ICalItem {
-    startDate: string;
-    endDate: string;
-    summary: string;
+const CWeekElement: IWeekElement = {
+    type: "element",
+    name: "week",
+    attributes: {
+        monday: "yes",
+        tuesday: "yes",
+        wednesday: "yes",
+        thursday: "yes",
+        friday: "yes",
+        saturday: "no",
+        sunday: "no",
+    },
+};
+
+const CDocumentationElement: IDocumentationElements = {
+    type: "element",
+    name: "documentation",
+    elements: [
+        {
+            type: "text",
+            text:
+                "\n        Calendar defining bank/settlement days for HK (Hong Kong).\n    ",
+        },
+    ],
+};
+
+const CResourceElement: IResourceElement = {
+    type: "element",
+    name: "resource",
+    attributes: {
+        name: "HK",
+        type: "application/x-calendar+xml",
+    },
+};
+
+interface IResourceElement {
+    type: "element";
+    name: "resource";
+    attributes: {
+        name: string;
+        type: "application/x-calendar+xml";
+    };
 }
+
 
 type TCalItem = {
     startDate: string;
@@ -32,60 +65,33 @@ type TCalItem = {
     summary: string;
 };
 
-interface IInitCalResourceReturn {
-    calendarXML: XmlDocument;
-    daysElement: XmlElement<XmlElement<XmlDocument>>;
+
+type TYesNo = "yes" | "no";
+
+interface IWeekElement {
+    type: "element";
+    name: "week";
+    attributes: {
+        monday: TYesNo;
+        tuesday: TYesNo;
+        wednesday: TYesNo;
+        thursday: TYesNo;
+        friday: TYesNo;
+        saturday: TYesNo;
+        sunday: TYesNo;
+    };
 }
 
-/* function initializeCalendarResource(): object {
-    const calResource = [
-        {
-            resource: [
-                { _attr: { name: "XHKF", type: "application/x-calendar+xml" } },
-                {
-                    week: {
-                        _attr: {
-                            monday: "yes",
-                            tuesday: "yes",
-                            wednesday: "yes",
-                            thursday: "yes",
-                            friday: "yes",
-                            saturday: "no",
-                            sunday: "no",
-                        },
-                    },
-                },
-                { documentation: "Calendar definition for XHKF" },
-            ],
-        },
-    ];
+interface IDocumentationElement {
+    type: "text";
+    text: string;
+}
 
-    console.log(xml(calResource, true));
-    return calResource;
-} */
-
-/* type TDayElement = {
-    type: "element",
-    name: "day",
-    attributes: {
-            date: string,
-            valid: string,
-        }
-    } */
-
-/* type TDaysElement = {
-        type: "element",
-        name: "days",
-        attributes?: {
-            year: string,
-        }
-        elements: TDayElement[]
-      }[]; */
-
-type TElement = "element";
-type TDay = "day";
-type TDays = "days";
-type TYesNo = "yes" | "no";
+interface IDocumentationElements {
+    type: "element";
+    name: "documentation";
+    elements: IDocumentationElement[];
+}
 
 interface IDayAttrib {
     date: string;
@@ -147,6 +153,15 @@ class CDaysElement {
     }
 }
 
+interface ICalData {
+    elements: [
+        IResourceElement,
+        IWeekElement,
+        IDaysElement,
+        IDocumentationElements
+    ];
+}
+
 function processCalData(calItems: {}[]): CDaysElement {
     // find all VEVENT where SUMMARY is "Hong Kong Market  is Closed" and add to the calendar resource and add them to an array for later processing
     var dayElements: CDayElement[] = [];
@@ -168,49 +183,16 @@ function processCalData(calItems: {}[]): CDaysElement {
     return new CDaysElement(dayElements, { year: "2019" });
 }
 
-/* async function getUserAsync(name) {
-  await fetch(`https://api.github.com/users/${name}`).then(async (response)=> {
-  return await response.json()
-}); */
 
 async function getCalData(url: string) {
-    const response = await fetch(url);
-    if (response.ok) {
-        var icsData = await response.text();
-        return icsToJson(icsData);
-    } else {
-        return new Error(`fetch() of ${url} failed.`);
-    }
-}
-
-/* function getCalData(url: string) {
-    // let url = CALENDAR_URL;
-    return Bluebird.resolve(fetch(url))
-        .then((response: Response) => {
-            return Bluebird.resolve(response.text());
-        })
-        .then((icsData: string) => {
+        const response = await fetch(url);
+        if (response.ok) {
+            var icsData = await response.text();
             return icsToJson(icsData);
-        })
-        .catch<Error>(error => new Error(error));
-} */
-
-/* var resourceJSON = undefined;
-getCalData(CALENDAR_URL)
-    .then(calData => {
-        if (calData instanceof Error) {
-            console.log(`\nSomething has gone wrong`);
         } else {
-            resourceJSON = processSourceCalendar(calData);
-            console.log(`\nresourceJSON = ` + JSON.stringify(resourceJSON, undefined,2));
-            console.log(`\n${calData.length} calendar entries returned.`);
-            console.log(`\nFirst calendar is:`);
-            console.log(`\n${JSON.stringify(calData[0],undefined,2)}`);
+            return new Error(`fetch() of ${url} failed.`);
         }
-    })
-    .catch(error => {
-        new Error(error);
-    }); */
+    }
 
 async function convertCalData(url: string) {
     const calItems = await getCalData(url);
@@ -223,10 +205,23 @@ async function convertCalData(url: string) {
 }
 
 async function main() {
-    var result = await convertCalData(CALENDAR_URL);
-    console.log(result);
-    var result2 = json2xml(JSON.stringify(result));
-    console.log(result2);
+    var calJSON = await convertCalData(CALENDAR_URL);
+    const CCal: ICalData = {
+        elements: [
+            CResourceElement,
+            CWeekElement,
+            calJSON,
+            CDocumentationElement,
+        ],
+    };
+
+    // console.log(result);
+    var intermediateResult = JSON.stringify(CCal);
+    console.log(
+        `\nintermediateResult = ${prettyjson.render(intermediateResult)}`
+    );
+    var result2 = json2xml(intermediateResult, { compact: false, spaces: 2 });
+    console.log(`result2 = ${result2}`);
 }
 
 // convertCalData(CALENDAR_URL).then(res => console.log(res));
