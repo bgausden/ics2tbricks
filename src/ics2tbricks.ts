@@ -1,22 +1,28 @@
+/* eslint-disable space-before-function-paren */
+/* eslint-disable comma-dangle */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 // ICS to Tbricks
 
-import icsToJson from "ics-to-json";
-import fetch from "node-fetch";
-import prettyjson from "prettyjson";
-import moment from "moment";
-import { json2xml } from "xml-js";
+import icsToJson from "ics-to-json"
+import fetch from "node-fetch"
+import prettyjson from "prettyjson"
+import moment from "moment"
+import { json2xml } from "xml-js"
 
-const HONG_KONG_CLOSED = "Hong Kong Market is Closed";
+const HONG_KONG_CLOSED = "Hong Kong Market is closed"
 const CALENDAR_URL =
-    "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en";
-const DAY = "day";
-const DAYS = "days";
-const NO = "no";
-const ELEMENT = "element";
+    "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
+const DAY: TDay = "day"
+const DAYS: TDays = "days"
+const WEEK: TWeek = "week"
+const NO: TYesNo = "no"
+const ELEMENT: TElement = "element"
+const RESOURCE: TResource = "resource"
+const RESOURCEID: TResourceID = "application/x-calendar+xml"
 
-const CWeekElement: IWeekElement = {
-    type: "element",
-    name: "week",
+const weekElement: IWeekElement = {
+    type: ELEMENT,
+    name: WEEK,
     attributes: {
         monday: "yes",
         tuesday: "yes",
@@ -26,76 +32,86 @@ const CWeekElement: IWeekElement = {
         saturday: "no",
         sunday: "no",
     },
-};
+}
 
-const CDocumentationElement: IDocumentationElements = {
-    type: "element",
+const documentationsElement: IDocumentationsElement = {
+    type: ELEMENT,
     name: "documentation",
     elements: [
         {
             type: "text",
-            text:
-                "\n        Calendar defining bank/settlement days for HK (Hong Kong).\n    ",
+            text: "Calendar defining bank/settlement days for HK (Hong Kong).",
         },
     ],
-};
+}
 
-const CResourceElement: IResourceElement = {
+type TElement = "element"
+type TDay = "day"
+type TDays = "days"
+type TWeek = "week"
+type TResource = "resource"
+type TDocumentation = "documentation"
+type TResourceID = "application/x-calendar+xml"
+type TYesNo = "yes" | "no"
+type TCalData = string
+
+interface TCalItem {
+    startDate: string
+    endDate: string
+    summary: string
+    description: string
+}
+
+/* const CResourceElement: IResourceElement = {
     type: "element",
     name: "resource",
     attributes: {
         name: "HK",
         type: "application/x-calendar+xml",
     },
-};
+}; */
 
-interface IResourceElement {
-    type: "element";
-    name: "resource";
-    attributes: {
-        name: string;
-        type: "application/x-calendar+xml";
-    };
+interface IElementBase {
+    type: TElement
+    name: TResource | TWeek | TDays | TDay | TDocumentation
 }
 
+interface IResource {
+    elements: [IResourceElement]
+}
 
-type TCalItem = {
-    startDate: string;
-    endDate: string;
-    summary: string;
-};
-
-
-type TYesNo = "yes" | "no";
-
-interface IWeekElement {
-    type: "element";
-    name: "week";
+interface IResourceElement extends IElementBase {
     attributes: {
-        monday: TYesNo;
-        tuesday: TYesNo;
-        wednesday: TYesNo;
-        thursday: TYesNo;
-        friday: TYesNo;
-        saturday: TYesNo;
-        sunday: TYesNo;
-    };
+        name: string
+        type: TResourceID
+    }
+    elements: [IWeekElement, IDaysElement, IDocumentationsElement]
+}
+
+interface IWeekElement extends IElementBase {
+    attributes: {
+        monday: TYesNo
+        tuesday: TYesNo
+        wednesday: TYesNo
+        thursday: TYesNo
+        friday: TYesNo
+        saturday: TYesNo
+        sunday: TYesNo
+    }
 }
 
 interface IDocumentationElement {
-    type: "text";
-    text: string;
+    type: "text"
+    text: string
 }
 
-interface IDocumentationElements {
-    type: "element";
-    name: "documentation";
-    elements: IDocumentationElement[];
+interface IDocumentationsElement extends IElementBase {
+    elements: IDocumentationElement[]
 }
 
 interface IDayAttrib {
-    date: string;
-    valid: TYesNo;
+    date: string
+    valid: TYesNo
 }
 
 class CDayAttrib implements IDayAttrib {
@@ -103,54 +119,50 @@ class CDayAttrib implements IDayAttrib {
 }
 
 interface IDaysAttrib {
-    year: string;
+    year: number
 }
 
-class CDaysAttrib implements IDaysAttrib {
-    constructor(public year: string) {}
-}
+/* class CDaysAttrib implements IDaysAttrib {
+    constructor (public year: string) {}
+} */
 
-interface IDayElement {
-    type: string;
-    name: string;
-    attributes: { date: string; valid: string };
+interface IDayElement extends IElementBase {
+    attributes: { date: string; valid: TYesNo }
 }
 
 class CDayElement implements IDayElement {
-    type = ELEMENT;
-    name = DAY;
-    attributes: IDayAttrib;
+    type = ELEMENT
+    name = DAY
+    attributes: IDayAttrib
     constructor(date: string, valid: TYesNo) {
-        this.attributes = new CDayAttrib(date, valid);
+        this.attributes = new CDayAttrib(date, valid)
     }
+
     toPlainObj(): IDayElement {
-        return Object.assign({}, this);
+        return Object.assign({}, this)
     }
 }
 
-interface IDaysElement {
-    type: string;
-    name: string;
-    dayElements: IDayElement[];
-    attributes?: IDaysAttrib;
+interface IDaysElement extends IElementBase {
+    elements: IDayElement[]
+    attributes?: IDaysAttrib
 }
 
 class CDaysElement {
-    type = ELEMENT;
-    name = DAYS;
-    dayElements: IDayElement[];
-    attributes?: IDaysAttrib;
-    constructor(dayElements: IDayElement[], attributes?: CDaysAttrib) {
-        this.dayElements = dayElements;
+    type = ELEMENT
+    name = DAYS
+    elements: IDayElement[]
+    attributes?: IDaysAttrib
+    constructor(daysElement?: IDayElement[], attributes?: IDaysAttrib) {
+        this.elements = daysElement ?? []
         if (attributes instanceof CDayAttrib) {
-            this.attributes = attributes;
-        } else {
-            attributes = undefined;
+            this.attributes = attributes
         }
     }
-    toPlainObj(): IDaysElement {
-        return Object.assign({}, this);
-    }
+
+    /*     toPlainObj () {
+        return Object.assign({}, this)
+    } */
 }
 
 interface ICalData {
@@ -158,72 +170,161 @@ interface ICalData {
         IResourceElement,
         IWeekElement,
         IDaysElement,
-        IDocumentationElements
-    ];
+        IDocumentationsElement
+    ]
 }
 
-function processCalData(calItems: {}[]): CDaysElement {
+interface IElement {
+    type: TElement
+    name: string
+    elements?: IElement[]
+    attributes?: {}
+    text?: string
+}
+
+/* function toPlainObject (o: object): object {
+    return Object.assign({}, o)
+} */
+
+type TElements =
+    | IWeekElement
+    | IDaysElement
+    | IDayElement
+    | IDocumentationsElement
+    | IResourceElement
+type TElementName = TResource | TDay | TDays | TWeek | TDocumentation
+type returnType = Partial<TElements>
+
+function addElementContainer(
+    name: TElementName,
+    elements?: TElements[],
+    attributes?: {}
+): IElementBase {
+    const container = {
+        type: ELEMENT,
+        name: name,
+        elements: elements ?? [],
+        attributes: attributes ?? {},
+    }
+    /*     if (elements !== undefined) {
+        Object.assign(container, elements)
+    }
+    if (attributes !== undefined) {
+        Object.assign(container, attributes)
+    } */
+    return container
+}
+
+function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
     // find all VEVENT where SUMMARY is "Hong Kong Market  is Closed" and add to the calendar resource and add them to an array for later processing
-    var dayElements: CDayElement[] = [];
+    const daysElements: IDaysElement[] = []
+    let count = 0
     // TODO for testing we only consider the first few items. For prod we'll need to look at every item (approx 850 of them)
-    for (const [index, element] of calItems.entries()) {
+    for (let index = 0; index < icsJSON.length; index++) {
+        if (count > 5) break
+        const calItem = icsJSON[index] as TCalItem
+        if (calItem.description === HONG_KONG_CLOSED) {
+            count++
+            // console.log(calItem.startDate)
+            // console.log(new Date(calItem.startDate))
+            const closedDate = moment(calItem.startDate)
+            const closedYear = Number(closedDate.format("YYYY"))
+            const dayElement = new CDayElement(
+                `${closedDate.format("MM")}-${closedDate.format("DD")}`,
+                NO
+            )
+            if (daysElements[closedYear] === undefined) {
+                // daysElements[closedYear] =  { type: ELEMENT, name: DAYS, elements: [] };
+                const daysAttribute: IDaysAttrib = {
+                    year: closedYear,
+                }
+                daysElements[closedYear] = new CDaysElement(
+                    undefined,
+                    daysAttribute
+                )
+            }
+            if (daysElements[closedYear] !== undefined) {
+                daysElements[closedYear].elements.push(dayElement)
+            }
+        }
+    }
+    /*     for (const [index, element] of icsJSON.entries()) {
         // calItems.forEach(entry => {
-        if (index === 5) break;
-        var calItem: TCalItem = <TCalItem>element;
-        if ((calItem.summary = HONG_KONG_CLOSED)) {
-            var closedDate = moment(calItem.startDate);
+        if (index === 50) break;
+        var calItem = <TCalItem>element;
+        if (calItem.summary == HONG_KONG_CLOSED) {
+            console.log(calItem.startDate)
+            // console.log(new Date(calItem.startDate))
+            var closedDate = moment(new Date(calItem.startDate));
             var dayElement = new CDayElement(
-                `${closedDate.month() + 1}-${closedDate.date()}`,
+                `${closedDate.format("MM") + 1}-${closedDate.format("DD")}`,
                 NO
             );
-            dayElements.push(dayElement);
+            elements.push(dayElement);
         }
-    }
-    // console.log(dayElements);
-    return new CDaysElement(dayElements, { year: "2019" });
+    } */
+
+    return daysElements
 }
 
-
-async function getCalData(url: string) {
-        const response = await fetch(url);
+async function getCalDataFromURL(url: string): Promise<string | Error> {
+    if (url.startsWith("http")) {
+        const response = await fetch(url)
         if (response.ok) {
-            var icsData = await response.text();
-            return icsToJson(icsData);
+            const calData = await response.text()
+            return calData
         } else {
-            return new Error(`fetch() of ${url} failed.`);
+            return new Error(`fetch() of ${url} failed.`)
+        }
+    } else {
+        throw new Error(`url parameter does not begin with "http"`)
+    }
+}
+
+async function main(): Promise<void> {
+    const icsData = await getCalDataFromURL(CALENDAR_URL)
+    let icsJSON: Array<{}> = []
+    // console.log(icsData);
+    if (icsData instanceof Error) {
+        throw icsData
+    } else {
+        icsJSON = icsToJson(icsData)
+    }
+
+    const daysElements = processICSJSON(icsJSON)
+
+    const resourceAttributes = {
+        name: "HK",
+        type: RESOURCEID,
+    }
+
+    const elements: TElements[] = [weekElement]
+    for (let index = 0; index < daysElements.length; index++) {
+        const element = daysElements[index]
+        if (daysElements[index] !== undefined) {
+            elements.push(element)
         }
     }
 
-async function convertCalData(url: string) {
-    const calItems = await getCalData(url);
-    //getCalData(CALENDAR_URL).then(calItems => {
-    if (calItems instanceof Error) {
-        throw calItems;
-    } else {
-        return processCalData(calItems);
-    }
-}
+    elements.push(documentationsElement)
 
-async function main() {
-    var calJSON = await convertCalData(CALENDAR_URL);
-    const CCal: ICalData = {
+    const resource = addElementContainer(RESOURCE, elements, resourceAttributes)
+    /*   const resource: IResource = {
         elements: [
-            CResourceElement,
-            CWeekElement,
-            calJSON,
-            CDocumentationElement,
+            {
+                type: ELEMENT,
+                name: "resource",
+                attributes: resourceAttributes,
+                elements: [weekElement, daysElements, documentationsElement],
+            },
         ],
-    };
+    }; */
 
-    // console.log(result);
-    var intermediateResult = JSON.stringify(CCal);
-    console.log(
-        `\nintermediateResult = ${prettyjson.render(intermediateResult)}`
-    );
-    var result2 = json2xml(intermediateResult, { compact: false, spaces: 2 });
-    console.log(`result2 = ${result2}`);
+    const intermediateResult = JSON.stringify(resource)
+    const logOutput = `${intermediateResult}`
+    console.log(`\nintermediateResult = ${prettyjson.render(logOutput)}\n`)
+    const result2 = json2xml(intermediateResult, { compact: false, spaces: 2 })
+    console.log(`calendar resource = \n${result2}`)
 }
 
-// convertCalData(CALENDAR_URL).then(res => console.log(res));
-
-main();
+main().then(undefined, undefined)
