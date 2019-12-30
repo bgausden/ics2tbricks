@@ -5,7 +5,6 @@
 
 import icsToJson from "ics-to-json"
 import fetch from "node-fetch"
-import prettyjson from "prettyjson"
 import moment from "moment"
 import { json2xml } from "xml-js"
 
@@ -221,7 +220,7 @@ function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
     let count = 0
     // TODO for testing we only consider the first few items. For prod we'll need to look at every item (approx 850 of them)
     for (let index = 0; index < icsJSON.length; index++) {
-        if (count > 5) break
+        if (count > 50) break
         const calItem = icsJSON[index] as TCalItem
         if (calItem.description === HONG_KONG_CLOSED) {
             count++
@@ -302,13 +301,16 @@ async function main(): Promise<void> {
     for (let index = 0; index < daysElements.length; index++) {
         const element = daysElements[index]
         if (daysElements[index] !== undefined) {
+            element.attributes = {
+                year: index
+            }
             elements.push(element)
         }
     }
 
     elements.push(documentationsElement)
 
-    const resource = addElementContainer(RESOURCE, elements, resourceAttributes)
+    const resourceBody = addElementContainer(RESOURCE, elements, resourceAttributes)
     /*   const resource: IResource = {
         elements: [
             {
@@ -320,11 +322,13 @@ async function main(): Promise<void> {
         ],
     }; */
 
-    const intermediateResult = JSON.stringify(resource)
-    const logOutput = `${intermediateResult}`
-    console.log(`\nintermediateResult = ${prettyjson.render(logOutput)}\n`)
-    const result2 = json2xml(intermediateResult, { compact: false, spaces: 2 })
-    console.log(`calendar resource = \n${result2}`)
+    /* Add the top level { elements: } wrapper around the body JSON */
+    const resource = JSON.stringify({
+        elements: [
+            resourceBody
+        ]
+    })
+    console.log(json2xml(resource, { compact: false, spaces: 2 }))
 }
 
 main().then(undefined, undefined)
