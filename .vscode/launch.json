@@ -23,6 +23,19 @@
             "env": {
                 "TS_NODE_IGNORE": "false"
             }
+        },
+        {
+            "type": "chrome",
+            "name": "Launch localhost",
+            "request": "launch",
+            "url": "http://localhost/index.html",
+            "webRoot": "${workspaceFolder}/src"
+        },
+        {
+            "type": "chrome",
+            "name": "Launch index.html",
+            "request": "launch",
+            "file": "${workspaceFolder}/src/index.html"
         }
     ]
 }
