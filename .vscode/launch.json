@@ -28,14 +28,14 @@
             "type": "chrome",
             "name": "Launch localhost",
             "request": "launch",
-            "url": "http://localhost/index.html",
+            "url": "http://localhost:5500/dist/index.html",
             "webRoot": "${workspaceFolder}/src"
         },
         {
             "type": "chrome",
             "name": "Launch index.html",
             "request": "launch",
-            "file": "${workspaceFolder}/src/index.html"
+            "file": "${workspaceFolder}/dist/index.html"
         }
     ]
 }
