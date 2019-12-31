@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 // ICS to Tbricks
 
-import icsToJson from "ics-to-json"
+import ICS2J from "ics-to-json"
 import fetch from "node-fetch"
 import moment from "moment"
 import { json2xml } from "xml-js"
