@@ -1,18 +1,25 @@
+/* eslint-disable node/file-extension-in-import */
 /* eslint-disable space-before-function-paren */
 /* eslint-disable comma-dangle */
 /* eslint-disable @typescript-eslint/interface-name-prefix */
-const url = document.getElementById("icsURL")
-const formEL = document.getElementById("ics2calResource")
+import { calResourceFromURL, DEFAULT_CALENDAR_URL, DEFAULT_COUNTRY_CODE } from "./ics2tbricks.js"
 
-if (formEL instanceof HTMLElement) {
-    formEL.addEventListener("submit", function(evt) {
-        evt.preventDefault()
-        fillArray()
-    })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function onBodyLoad(): void {
+    const formEL = document.getElementById("ics2calResource")
+    const url = document.getElementById("icsURL")
+    const countryCode = document.getElementById("countryCode")
+    if (formEL instanceof HTMLElement) {
+        formEL.addEventListener("submit", function(evt) {
+            evt.preventDefault()
+            const urlString = url?.nodeValue ?? DEFAULT_CALENDAR_URL
+            const countryCodeString = countryCode?.nodeValue ?? DEFAULT_COUNTRY_CODE
+            retrieveAndProcess(urlString, countryCodeString)
+        })
+    }
 }
 
-function fillArray(): void {
-    if (url instanceof HTMLElement) {
-        console.log(`do something with ${url.nodeValue}`)
-    }
+function retrieveAndProcess(url: string, countryCode: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    calResourceFromURL(url, countryCode).finally(() => console.log(`Done`))
 }

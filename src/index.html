@@ -1,7 +1,16 @@
-<html><header><script src = "../dist/index.js"></script></header><body><form id="ics2calResource">
-    <h1>Enter ICS Url to Retrieve </h1>
-   <fieldset>
-       <input type="url" id="icsURL" name="URL" />
-   </fieldset>
-   <input type="submit" value="Retrieve"></input>
-</form></body></html>
+<html>
+    <header><script type="module" src="index.js"></script></header>
+    <body onload="onBodyLoad()">
+        <form id="ics2calResource" method="post">
+            <fieldset>
+                <legend>ICS Url</legend>
+                <label for="icsURL">URL:</label>
+                <input type="url" id="icsURL" name="URL" size="40" />
+                <br />
+                <label for="countryCode">Country Code:</label>
+                <input type="text" id="countryCode" name="countryCode" maxlength="2" />
+            </fieldset>
+            <input type="submit" value="Retrieve" />
+        </form>
+    </body>
+</html>
