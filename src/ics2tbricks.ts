@@ -6,7 +6,7 @@
 import ICS2J from "ics-to-json"
 import fetch from "node-fetch"
 import moment from "moment"
-import { json2xml } from "xml-js"
+import xmljs from "xml-js"
 
 const HONG_KONG_CLOSED = "Hong Kong Market is closed"
 const CALENDAR_URL =
@@ -328,7 +328,7 @@ async function main(): Promise<void> {
             resourceBody
         ]
     })
-    console.log(json2xml(resource, { compact: false, spaces: 2 }))
+    console.log(xmljs.json2xml(resource, { compact: false, spaces: 2 }))
 }
 
 main().then(undefined, undefined)
