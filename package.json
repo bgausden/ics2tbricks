@@ -3,12 +3,14 @@
     "version": "1.0.0",
     "description": "Simple utility for converting a trading/settlement calendar in ICS form to the equivalent Tbricks calendar resource (in XML format).",
     "main": "ics2tbricks.js",
+    "type": "module",
     "engines": {
         "node": ">=8.10.0"
     },
     "dependencies": {
         "bluebird": "3.5.1",
         "es6-shim": "^0.35.5",
+        
         "ics-to-json": "^1.0.0",
         "moment": "^2.24.0",
         "node-fetch": "^2.6.0",
