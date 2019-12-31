@@ -8,9 +8,10 @@ import fetch from "node-fetch"
 import moment from "moment"
 import xmljs from "xml-js"
 
+const HONG_KONG = "HK"
+export const DEFAULT_COUNTRY_CODE = HONG_KONG
 const HONG_KONG_CLOSED = "Hong Kong Market is closed"
-const CALENDAR_URL =
-    "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
+export const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
 const DAY: TDay = "day"
 const DAYS: TDays = "days"
 const WEEK: TWeek = "week"
@@ -165,12 +166,7 @@ class CDaysElement {
 }
 
 interface ICalData {
-    elements: [
-        IResourceElement,
-        IWeekElement,
-        IDaysElement,
-        IDocumentationsElement
-    ]
+    elements: [IResourceElement, IWeekElement, IDaysElement, IDocumentationsElement]
 }
 
 interface IElement {
@@ -185,20 +181,11 @@ interface IElement {
     return Object.assign({}, o)
 } */
 
-type TElements =
-    | IWeekElement
-    | IDaysElement
-    | IDayElement
-    | IDocumentationsElement
-    | IResourceElement
+type TElements = IWeekElement | IDaysElement | IDayElement | IDocumentationsElement | IResourceElement
 type TElementName = TResource | TDay | TDays | TWeek | TDocumentation
 type returnType = Partial<TElements>
 
-function addElementContainer(
-    name: TElementName,
-    elements?: TElements[],
-    attributes?: {}
-): IElementBase {
+function addElementContainer(name: TElementName, elements?: TElements[], attributes?: {}): IElementBase {
     const container = {
         type: ELEMENT,
         name: name,
@@ -228,19 +215,13 @@ function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
             // console.log(new Date(calItem.startDate))
             const closedDate = moment(calItem.startDate)
             const closedYear = Number(closedDate.format("YYYY"))
-            const dayElement = new CDayElement(
-                `${closedDate.format("MM")}-${closedDate.format("DD")}`,
-                NO
-            )
+            const dayElement = new CDayElement(`${closedDate.format("MM")}-${closedDate.format("DD")}`, NO)
             if (daysElements[closedYear] === undefined) {
                 // daysElements[closedYear] =  { type: ELEMENT, name: DAYS, elements: [] };
                 const daysAttribute: IDaysAttrib = {
                     year: closedYear,
                 }
-                daysElements[closedYear] = new CDaysElement(
-                    undefined,
-                    daysAttribute
-                )
+                daysElements[closedYear] = new CDaysElement(undefined, daysAttribute)
             }
             if (daysElements[closedYear] !== undefined) {
                 daysElements[closedYear].elements.push(dayElement)
@@ -280,20 +261,20 @@ async function getCalDataFromURL(url: string): Promise<string | Error> {
     }
 }
 
-async function main(): Promise<void> {
-    const icsData = await getCalDataFromURL(CALENDAR_URL)
-    let icsJSON: Array<{}> = []
+export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
+    const icsData = await getCalDataFromURL(url)
+    let icsJSON = [] as Array<{}>
     // console.log(icsData);
     if (icsData instanceof Error) {
         throw icsData
     } else {
-        icsJSON = icsToJson(icsData)
+        icsJSON = ICS2J.default(icsData)
     }
 
     const daysElements = processICSJSON(icsJSON)
 
     const resourceAttributes = {
-        name: "HK",
+        name: countryCode,
         type: RESOURCEID,
     }
 
@@ -302,7 +283,7 @@ async function main(): Promise<void> {
         const element = daysElements[index]
         if (daysElements[index] !== undefined) {
             element.attributes = {
-                year: index
+                year: index,
             }
             elements.push(element)
         }
@@ -324,11 +305,9 @@ async function main(): Promise<void> {
 
     /* Add the top level { elements: } wrapper around the body JSON */
     const resource = JSON.stringify({
-        elements: [
-            resourceBody
-        ]
+        elements: [resourceBody],
     })
     console.log(xmljs.json2xml(resource, { compact: false, spaces: 2 }))
 }
 
-main().then(undefined, undefined)
+calResourceFromURL().then(undefined, undefined)
