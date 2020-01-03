@@ -1,9 +1,8 @@
 /* eslint-disable space-before-function-paren */
-/* eslint-disable comma-dangle */
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 // ICS to Tbricks
 
-import ICS2J from "ics-to-json"
+import { icsToJson } from "ics-to-json"
 import fetch from "node-fetch"
 import moment from "moment"
 import xmljs from "xml-js"
@@ -30,8 +29,8 @@ const weekElement: IWeekElement = {
         thursday: "yes",
         friday: "yes",
         saturday: "no",
-        sunday: "no",
-    },
+        sunday: "no"
+    }
 }
 
 const documentationsElement: IDocumentationsElement = {
@@ -40,9 +39,9 @@ const documentationsElement: IDocumentationsElement = {
     elements: [
         {
             type: "text",
-            text: "Calendar defining bank/settlement days for HK (Hong Kong).",
-        },
-    ],
+            text: "Calendar defining bank/settlement days for HK (Hong Kong)."
+        }
+    ]
 }
 
 type TElement = "element"
@@ -61,15 +60,6 @@ interface TCalItem {
     summary: string
     description: string
 }
-
-/* const CResourceElement: IResourceElement = {
-    type: "element",
-    name: "resource",
-    attributes: {
-        name: "HK",
-        type: "application/x-calendar+xml",
-    },
-}; */
 
 interface IElementBase {
     type: TElement
@@ -122,10 +112,6 @@ interface IDaysAttrib {
     year: number
 }
 
-/* class CDaysAttrib implements IDaysAttrib {
-    constructor (public year: string) {}
-} */
-
 interface IDayElement extends IElementBase {
     attributes: { date: string; valid: TYesNo }
 }
@@ -159,10 +145,6 @@ class CDaysElement {
             this.attributes = attributes
         }
     }
-
-    /*     toPlainObj () {
-        return Object.assign({}, this)
-    } */
 }
 
 interface ICalData {
@@ -177,10 +159,6 @@ interface IElement {
     text?: string
 }
 
-/* function toPlainObject (o: object): object {
-    return Object.assign({}, o)
-} */
-
 type TElements = IWeekElement | IDaysElement | IDayElement | IDocumentationsElement | IResourceElement
 type TElementName = TResource | TDay | TDays | TWeek | TDocumentation
 type returnType = Partial<TElements>
@@ -190,36 +168,27 @@ function addElementContainer(name: TElementName, elements?: TElements[], attribu
         type: ELEMENT,
         name: name,
         elements: elements ?? [],
-        attributes: attributes ?? {},
+        attributes: attributes ?? {}
     }
-    /*     if (elements !== undefined) {
-        Object.assign(container, elements)
-    }
-    if (attributes !== undefined) {
-        Object.assign(container, attributes)
-    } */
     return container
 }
 
 function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
     // find all VEVENT where SUMMARY is "Hong Kong Market  is Closed" and add to the calendar resource and add them to an array for later processing
     const daysElements: IDaysElement[] = []
-    let count = 0
+    // let count = 0
     // TODO for testing we only consider the first few items. For prod we'll need to look at every item (approx 850 of them)
     for (let index = 0; index < icsJSON.length; index++) {
-        if (count > 50) break
+        // if (count > 50) break
         const calItem = icsJSON[index] as TCalItem
         if (calItem.description === HONG_KONG_CLOSED) {
-            count++
-            // console.log(calItem.startDate)
-            // console.log(new Date(calItem.startDate))
+            // count++
             const closedDate = moment(calItem.startDate)
             const closedYear = Number(closedDate.format("YYYY"))
             const dayElement = new CDayElement(`${closedDate.format("MM")}-${closedDate.format("DD")}`, NO)
             if (daysElements[closedYear] === undefined) {
-                // daysElements[closedYear] =  { type: ELEMENT, name: DAYS, elements: [] };
                 const daysAttribute: IDaysAttrib = {
-                    year: closedYear,
+                    year: closedYear
                 }
                 daysElements[closedYear] = new CDaysElement(undefined, daysAttribute)
             }
@@ -228,28 +197,13 @@ function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
             }
         }
     }
-    /*     for (const [index, element] of icsJSON.entries()) {
-        // calItems.forEach(entry => {
-        if (index === 50) break;
-        var calItem = <TCalItem>element;
-        if (calItem.summary == HONG_KONG_CLOSED) {
-            console.log(calItem.startDate)
-            // console.log(new Date(calItem.startDate))
-            var closedDate = moment(new Date(calItem.startDate));
-            var dayElement = new CDayElement(
-                `${closedDate.format("MM") + 1}-${closedDate.format("DD")}`,
-                NO
-            );
-            elements.push(dayElement);
-        }
-    } */
 
     return daysElements
 }
 
 async function getCalDataFromURL(url: string): Promise<string | Error> {
     if (url.startsWith("http")) {
-        const response = await fetch(url)
+        const response = await fetch("https://cors-anywhere.herokuapp.com/" + url)
         if (response.ok) {
             const calData = await response.text()
             return calData
@@ -264,18 +218,17 @@ async function getCalDataFromURL(url: string): Promise<string | Error> {
 export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
     const icsData = await getCalDataFromURL(url)
     let icsJSON = [] as Array<{}>
-    // console.log(icsData);
     if (icsData instanceof Error) {
         throw icsData
     } else {
-        icsJSON = ICS2J.default(icsData)
+        icsJSON = icsToJson(icsData)
     }
 
     const daysElements = processICSJSON(icsJSON)
 
     const resourceAttributes = {
         name: countryCode,
-        type: RESOURCEID,
+        type: RESOURCEID
     }
 
     const elements: TElements[] = [weekElement]
@@ -283,7 +236,7 @@ export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode
         const element = daysElements[index]
         if (daysElements[index] !== undefined) {
             element.attributes = {
-                year: index,
+                year: index
             }
             elements.push(element)
         }
@@ -292,22 +245,12 @@ export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode
     elements.push(documentationsElement)
 
     const resourceBody = addElementContainer(RESOURCE, elements, resourceAttributes)
-    /*   const resource: IResource = {
-        elements: [
-            {
-                type: ELEMENT,
-                name: "resource",
-                attributes: resourceAttributes,
-                elements: [weekElement, daysElements, documentationsElement],
-            },
-        ],
-    }; */
 
     /* Add the top level { elements: } wrapper around the body JSON */
     const resource = JSON.stringify({
-        elements: [resourceBody],
+        elements: [resourceBody]
     })
     console.log(xmljs.json2xml(resource, { compact: false, spaces: 2 }))
 }
 
-calResourceFromURL().then(undefined, undefined)
+// calResourceFromURL().then(undefined, undefined)
