@@ -2,15 +2,16 @@
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 // ICS to Tbricks
 
-import { icsToJson } from "ics-to-json"
+import icsToJson from "ics-to-json"
 import fetch from "node-fetch"
 import moment from "moment"
 import xmljs from "xml-js"
 
 const HONG_KONG = "HK"
-export const DEFAULT_COUNTRY_CODE = HONG_KONG
+const DEFAULT_COUNTRY_CODE = HONG_KONG
 const HONG_KONG_CLOSED = "Hong Kong Market is closed"
-export const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
+const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
+const TEST_CALENDAR_URL = "http://francis.net.xxx"
 const DAY: TDay = "day"
 const DAYS: TDays = "days"
 const WEEK: TWeek = "week"
@@ -29,8 +30,8 @@ const weekElement: IWeekElement = {
         thursday: "yes",
         friday: "yes",
         saturday: "no",
-        sunday: "no"
-    }
+        sunday: "no",
+    },
 }
 
 const documentationsElement: IDocumentationsElement = {
@@ -39,9 +40,9 @@ const documentationsElement: IDocumentationsElement = {
     elements: [
         {
             type: "text",
-            text: "Calendar defining bank/settlement days for HK (Hong Kong)."
-        }
-    ]
+            text: "Calendar defining bank/settlement days for HK (Hong Kong).",
+        },
+    ],
 }
 
 type TElement = "element"
@@ -168,7 +169,7 @@ function addElementContainer(name: TElementName, elements?: TElements[], attribu
         type: ELEMENT,
         name: name,
         elements: elements ?? [],
-        attributes: attributes ?? {}
+        attributes: attributes ?? {},
     }
     return container
 }
@@ -188,7 +189,7 @@ function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
             const dayElement = new CDayElement(`${closedDate.format("MM")}-${closedDate.format("DD")}`, NO)
             if (daysElements[closedYear] === undefined) {
                 const daysAttribute: IDaysAttrib = {
-                    year: closedYear
+                    year: closedYear,
                 }
                 daysElements[closedYear] = new CDaysElement(undefined, daysAttribute)
             }
@@ -203,22 +204,28 @@ function processICSJSON(icsJSON: Array<{}>): IDaysElement[] {
 
 async function getCalDataFromURL(url: string): Promise<string | Error> {
     if (url.startsWith("http")) {
-        const response = await fetch("https://cors-anywhere.herokuapp.com/" + url)
-        if (response.ok) {
-            const calData = await response.text()
-            return calData
-        } else {
-            return new Error(`fetch() of ${url} failed.`)
+        try {
+            const response = await fetch(url)
+            if (response.ok) {
+                const calData = await response.text()
+                return calData
+            } else {
+                return new Error(`fetch() of ${url} failed.`)
+            }
+        } catch (error) {
+            console.error(error)
+            return new Error(`fetch failed`)
         }
     } else {
         throw new Error(`url parameter does not begin with "http"`)
     }
 }
 
-export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
+async function calResourceFromURL(url = TEST_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
     const icsData = await getCalDataFromURL(url)
     let icsJSON = [] as Array<{}>
     if (icsData instanceof Error) {
+        // TODO handle Errors instead of dropping out of the Promise chain.
         throw icsData
     } else {
         icsJSON = icsToJson(icsData)
@@ -228,7 +235,7 @@ export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode
 
     const resourceAttributes = {
         name: countryCode,
-        type: RESOURCEID
+        type: RESOURCEID,
     }
 
     const elements: TElements[] = [weekElement]
@@ -236,7 +243,7 @@ export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode
         const element = daysElements[index]
         if (daysElements[index] !== undefined) {
             element.attributes = {
-                year: index
+                year: index,
             }
             elements.push(element)
         }
@@ -248,9 +255,12 @@ export async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode
 
     /* Add the top level { elements: } wrapper around the body JSON */
     const resource = JSON.stringify({
-        elements: [resourceBody]
+        elements: [resourceBody],
     })
     console.log(xmljs.json2xml(resource, { compact: false, spaces: 2 }))
 }
 
-// calResourceFromURL().then(undefined, undefined)
+calResourceFromURL().then(
+    () => console.log(`Done`),
+    () => console.log(`Didn't work out`)
+)
