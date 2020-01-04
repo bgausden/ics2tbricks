@@ -2,7 +2,7 @@
 /* eslint-disable space-before-function-paren */
 /* eslint-disable comma-dangle */
 /* eslint-disable @typescript-eslint/interface-name-prefix */
-import { calResourceFromURL, DEFAULT_CALENDAR_URL, DEFAULT_COUNTRY_CODE } from "./ics2tbricks"
+import { calResourceFromURL, DEFAULT_CALENDAR_URL, DEFAULT_COUNTRY_CODE } from "../../src/ics2tbricks"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function init(formEL: HTMLElement, url: HTMLElement, countryCode: HTMLElement): void {
