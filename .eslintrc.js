@@ -25,5 +25,6 @@ module.exports = {
         "node/prefer-global/url": ["error", "always"],
         "node/prefer-promises/dns": "error",
         "node/prefer-promises/fs": "error",
+        "comma-dangle": ["error", "only-multiline"], // to match prettier's es5 option for commas
     },
-};
+}
