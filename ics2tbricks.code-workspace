@@ -5,6 +5,7 @@
         }
     ],
     "settings": {
-        "typescript.tsserver.log": "normal"
+        "typescript.tsserver.log": "normal",
+        "typescript.tsdk": "node_modules\\typescript\\lib"
     }
 }
