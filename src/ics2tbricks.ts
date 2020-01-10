@@ -8,8 +8,10 @@ import moment from "moment"
 import xmljs from "xml-js"
 
 const HONG_KONG = "HK"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DEFAULT_COUNTRY_CODE = HONG_KONG
 const HONG_KONG_CLOSED = "Hong Kong Market is closed"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
 const TEST_CALENDAR_URL = "http://francis.net.xxx"
 const DAY: TDay = "day"
@@ -53,7 +55,6 @@ type TResource = "resource"
 type TDocumentation = "documentation"
 type TResourceID = "application/x-calendar+xml"
 type TYesNo = "yes" | "no"
-type TCalData = string
 
 interface TCalItem {
     startDate: string
@@ -213,7 +214,7 @@ async function getCalDataFromURL(url: string): Promise<string | Error> {
                 return new Error(`fetch() of ${url} failed.`)
             }
         } catch (error) {
-            console.error(error)
+            console.error(error.message)
             return new Error(`fetch failed`)
         }
     } else {
@@ -262,5 +263,11 @@ async function calResourceFromURL(url = TEST_CALENDAR_URL, countryCode = HONG_KO
 
 calResourceFromURL().then(
     () => console.log(`Done`),
-    () => console.log(`Didn't work out`)
+    result => {
+        if (result instanceof Error) {
+            console.error(`Something failed: ${result}`)
+        } else {
+            console.log(`Didn't work out but reason is unclear.`)
+        }
+    }
 )
