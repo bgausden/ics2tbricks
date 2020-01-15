@@ -12,7 +12,8 @@ const HONG_KONG = "HK"
 const DEFAULT_COUNTRY_CODE = HONG_KONG
 const HONG_KONG_CLOSED = "Hong Kong Market is closed"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-Calendar?sc_lang=en"
+const DEFAULT_CALENDAR_URL = "https://www.hkex.com.hk/News/HKEX-Calendar/Subscribe-CalendarS"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TEST_CALENDAR_URL = "http://francis.net.xxx"
 const DAY: TDay = "day"
 const DAYS: TDays = "days"
@@ -211,7 +212,7 @@ async function getCalDataFromURL(url: string): Promise<string | Error> {
                 const calData = await response.text()
                 return calData
             } else {
-                return new Error(`fetch() of ${url} failed.`)
+                throw new Error(`fetch() of ${url} failed.`)
             }
         } catch (error) {
             console.error(error.message)
@@ -222,7 +223,7 @@ async function getCalDataFromURL(url: string): Promise<string | Error> {
     }
 }
 
-async function calResourceFromURL(url = TEST_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
+async function calResourceFromURL(url = DEFAULT_CALENDAR_URL, countryCode = HONG_KONG): Promise<void> {
     const icsData = await getCalDataFromURL(url)
     let icsJSON = [] as Array<{}>
     if (icsData instanceof Error) {
@@ -261,7 +262,7 @@ async function calResourceFromURL(url = TEST_CALENDAR_URL, countryCode = HONG_KO
     console.log(xmljs.json2xml(resource, { compact: false, spaces: 2 }))
 }
 
-calResourceFromURL().then(
+/* calResourceFromURL().then(
     () => console.log(`Done`),
     result => {
         if (result instanceof Error) {
@@ -270,4 +271,6 @@ calResourceFromURL().then(
             console.log(`Didn't work out but reason is unclear.`)
         }
     }
-)
+) */
+
+calResourceFromURL().catch(e => console.error(e))
